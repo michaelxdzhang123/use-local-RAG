@@ -26,11 +26,15 @@ uv run pytest
 
 ### 2) 配置环境变量
 
+```bash
+cp .env.local .env
+source .env
+=======
 建议把变量写入 `.env.local`，再复制到 `.env`：
 
 ```bash
 cp .env.local .env
-```
+
 
 关键变量示例：
 

@@ -1,0 +1,19 @@
+[project]
+name = "use-local-rag"
+version = "0.1.0"
+description = "Local RAGFlow MCP retrieval pretty-printer and helper tests"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "anyio>=4.0.0",
+  "mcp>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["test_pretty_streamMCP.py"]

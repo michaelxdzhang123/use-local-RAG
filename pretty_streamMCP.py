@@ -15,16 +15,58 @@ Optional:
 
 from __future__ import annotations
 
+import argparse
 import ast
 import json
 import os
 import sys
-import textwrap
+from pathlib import Path
 from typing import Any
 
 from anyio import run
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
+
+
+def _normalize_ids(raw: Any) -> list[str]:
+    if isinstance(raw, str):
+        value = raw.strip()
+        return [value] if value else []
+    if isinstance(raw, list):
+        return [str(item).strip() for item in raw if str(item).strip()]
+    return []
+
+
+def load_dataset_ids_from_mcp_info(content_name: str, mcp_info_path: str = "mcp_info.json") -> list[str]:
+    """Resolve dataset ids by content name from mcp_info.json."""
+    info_path = Path(mcp_info_path)
+    if not info_path.exists():
+        raise FileNotFoundError(f"mcp info file not found: {mcp_info_path}")
+
+    data = json.loads(info_path.read_text(encoding="utf-8"))
+    if not isinstance(data, list):
+        raise ValueError(f"mcp info file must be a JSON array: {mcp_info_path}")
+
+    wanted = content_name.strip().casefold()
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("name", "")).strip().casefold() != wanted:
+            continue
+
+        dataset_ids = _normalize_ids(item.get("dataset_ids"))
+        if not dataset_ids:
+            dataset_ids = _normalize_ids(item.get("content_ids"))
+        if not dataset_ids:
+            dataset_ids = _normalize_ids(item.get("content_id"))
+        if dataset_ids:
+            return dataset_ids
+
+        raise ValueError(
+            f"content '{content_name}' found in {mcp_info_path}, but no dataset id field exists"
+        )
+
+    raise KeyError(f"content '{content_name}' not found in {mcp_info_path}")
 
 
 def env_list(name: str) -> list[str]:
@@ -208,7 +250,13 @@ def auth_headers() -> dict[str, str] | None:
 
 
 async def main() -> None:
-    question = " ".join(sys.argv[1:]).strip()
+    parser = argparse.ArgumentParser(description="Query RAGFlow MCP and pretty print markdown output")
+    parser.add_argument("question", nargs="*", help="Retrieval question text")
+    parser.add_argument("--content", dest="content_name", default=os.getenv("RAGFLOW_CONTENT", ""), help="Content name defined in mcp_info.json, e.g. HWind")
+    parser.add_argument("--mcp-info", dest="mcp_info_path", default=os.getenv("RAGFLOW_MCP_INFO", "mcp_info.json"), help="Path to mcp_info.json")
+    args = parser.parse_args()
+
+    question = " ".join(args.question).strip()
     if not question:
         question = input("RAGFlow question> ").strip()
     if not question:
@@ -217,11 +265,19 @@ async def main() -> None:
     mcp_url = os.getenv("RAGFLOW_MCP_URL", "http://172.28.21.22:9382/mcp/")
     tool_name = os.getenv("RAGFLOW_TOOL_NAME", "ragflow_retrieval")
     dataset_ids = env_list("RAGFLOW_DATASET_IDS")
+    if not dataset_ids and args.content_name.strip():
+        try:
+            dataset_ids = load_dataset_ids_from_mcp_info(args.content_name, args.mcp_info_path)
+        except (FileNotFoundError, ValueError, KeyError) as exc:
+            raise SystemExit(str(exc)) from exc
     document_ids = env_list("RAGFLOW_DOCUMENT_IDS")
     top_n = int(os.getenv("RAGFLOW_TOP_N", "8"))
 
     if not dataset_ids:
-        raise SystemExit("Please set RAGFLOW_DATASET_IDS, e.g. export RAGFLOW_DATASET_IDS='dataset_id_1,dataset_id_2'")
+        raise SystemExit(
+            "Please set RAGFLOW_DATASET_IDS or pass --content <name> from mcp_info.json, "
+            "e.g. --content HWind"
+        )
 
     client_kwargs: dict[str, Any] = {}
     headers = auth_headers()

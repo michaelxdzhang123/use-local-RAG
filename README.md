@@ -26,12 +26,15 @@ uv run pytest
 
 ### 2) 配置环境变量
 
-项目已提供 `.env.local` 模板，建议先复制到 `.env` 再按需修改：
-
 ```bash
 cp .env.local .env
 source .env
-```
+=======
+建议把变量写入 `.env.local`，再复制到 `.env`：
+
+```bash
+cp .env.local .env
+
 
 关键变量示例：
 

@@ -252,7 +252,7 @@ def auth_headers() -> dict[str, str] | None:
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Query RAGFlow MCP and pretty print markdown output")
     parser.add_argument("question", nargs="*", help="Retrieval question text")
-    parser.add_argument("--content", dest="content_name", default=os.getenv("RAGFLOW_CONTENT", ""), help="Content name defined in mcp_info.json, e.g. HWind")
+    parser.add_argument("--content", dest="content_name", default=os.getenv("RAGFLOW_CONTENT", "HWind"), help="Content name defined in mcp_info.json, e.g. HWind")
     parser.add_argument("--mcp-info", dest="mcp_info_path", default=os.getenv("RAGFLOW_MCP_INFO", "mcp_info.json"), help="Path to mcp_info.json")
     args = parser.parse_args()
 

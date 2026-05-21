@@ -1,0 +1,47 @@
+# RAGFlow MCP 检索结果
+
+## 检索摘要
+
+- 问题：standstill 空转载荷
+- 数据集数量：1
+- 命中片段：2
+- 当前页：1 / 1
+- 相似度阈值：0.2
+- 向量权重：0.3
+- 关键词检索：False
+
+## Top 检索片段
+
+| # | similarity | dataset | document | type | chunk_id | keywords |
+|---:|---:|---|---|---|---|---|
+| 1 | 0.2348 | 团队向量 | 风电机组团队HEROWIND软件V0.6评审会会议纪要.docx | unknown | `6081add0bb1a7bdc` | 稳态计算, 载荷计算 |
+| 2 | 0.2294 | 团队向量 | DTU Casestab开源项目研究报告.pdf | pdf | `47eae4c3078f7f96` | CASEStab, HAWCStab2, 结构模态 |
+
+> 注意：最高 similarity 低于 0.35，相关性偏弱；建议继续优化 query 或扩大检索关键词。
+
+## 证据片段
+
+### [1] 风电机组团队HEROWIND软件V0.6评审会会议纪要.docx
+
+- dataset: 团队向量
+- chunk: `6081add0bb1a7bdc`
+- document_id: `b7798d783ee211f18c080f7ed2973bfc`
+- type: unknown
+- similarity: 0.2348
+- term/vector: 0.1623 / 0.4040
+
+> 求解计算：已完成多项核心求解功能开发，包括叶片气动信息、性能系数、稳态功率曲线以及稳态运行载荷、稳态停机载荷等求解；其中稳态停机载荷可计算稳态均匀风下停机状态机组载荷，稳态运行载荷能实现随风速变化的桨距和转速寻优。稳态计算功能及输出参数全面对标Bladed，计算误差小于2%；湍流风工况下动态载荷计算误差同样小于2%。在风况设置与气动求解方面，完成定常风、阵风、湍流风的设置与读取功能，支持Bladed格式wnd文件导入；基于稳态和瞬态BEM计算方法构建气动求解模块，集成动态入流、动态失速等五大类修正模型。工况仿真能力全面覆盖核心场景，求解器深度耦合多核心模块，可实现正常发电、正常停机等6类核心工况仿真，机组仿真功能对Bladed覆盖度达100%；并网工况全覆盖IEC标准典型场景，兼容正常工况与故障工况全场景仿真，同时可满足启机、空转等各类细分工况的载荷计算需求。在文件配置与运算性能上，将输入文件解耦为模型定义文件与仿真工况配置文件，提升模型复用率、降低配置复杂度；基于AMD 5700X CPU测试，620s正常发电工况下，较Bladed用时快41.9%。批处理计算：核心功能对标Blad…
+
+### [2] DTU Casestab开源项目研究报告.pdf
+
+- dataset: 团队向量
+- chunk: `47eae4c3078f7f96`
+- document_id: `c34d19bc3ee211f18c070f7ed2973bfc`
+- type: pdf
+- similarity: 0.2294
+- term/vector: 0.1504 / 0.4137
+- image_id: `93cacc663ee211f18c070f7ed2973bfc-47eae4c3078f7f96`
+- document_update_date: 2026-04-24T09:56:29
+
+> 2. 静止叶片结构模态（第一个运行工况）： rotor_models.models[0].substructures[1]: 访问第一个运行模型（索引0），然后选择叶片子结构（假设 索引1 代表叶片）。 rotor_models.models[0].update_all_substructures(0.0): 更新第一个模型所有子结构的质量和刚度矩 阵。0.0 表示静止状态，没有旋转或外部力。 blade.compute_modes(): 使用CASEStab 方法计算叶片子结构的固有频率和模态形状。结果存储在 casestab_sol 中。 np.loadtxt(...): 从blade.cmb 加载频率数据，从blade_standstill.amp 加载模态形状数据 （HAWCStab2 结果）到NumPy 数组中进行比较。skiprows 用于跳过文件中的标题信息。 np.zeros(...): 创建全零的NumPy 数组，用于预分配存储HAWCStab2 模态形状的振幅(modeamp )和相 位(modepha )的空间。 np.radians(...): 将从HAWCS…
+
